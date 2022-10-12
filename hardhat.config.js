@@ -14,7 +14,7 @@ module.exports = {
   networks: {
     testnetBinance: {
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
-      accounts: ['b8d3a39acccb10321f334d7a4cba4be6260da69100f08b1391e0cd089d09d66c'],
+      accounts: [''],
       networkId: 97,
     }
      
