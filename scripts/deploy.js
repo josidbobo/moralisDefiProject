@@ -7,11 +7,11 @@
 const {ethers, upgrades} = require("hardhat");
 
 async function main() {
-  const BlockInsure = await ethers.getContractFactory('InsureBlocks');
-  const blockInsure = await upgrades.deployProxy(BlockInsure);
-  await blockInsure.deployed();
+  const Block = await ethers.getContractFactory('InsureBlocks');
+  const block = await upgrades.deployProxy(Block);
+  await block.deployed();
  
-  console.log('BlockInsure contract deployed to: ', blockInsure.address);
+  console.log('Block contract deployed to: ', block.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -5,6 +5,7 @@
  import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
  contract InsureBlocks is Initializable {
+    // State variables
      address mainAccount;
      bool locked;
      address owner;
@@ -37,14 +38,17 @@
          bool isApproved;
         }
 
+//==============Mappings=================================
      mapping(uint => Insurance) portfolios;
 
      mapping (address => mapping(uint => Insurance)) userInsurances;
+     
      mapping (address => uint) portfolioCountOfEachUser;
      mapping (address => bool) public isInsuree;
      mapping (address => bytes32) public passwordHash;
-     uint public userCount;
-     uint public count;
+
+     uint public userCount;   // Keep count of number of users
+     uint public count;     // Keep count of total portfolio
 
     event InsuranceMade(address indexed owner, uint _amountInsured, string typeOfInsurance, uint iD);
     event InsuranceDeposit(address indexed owner, uint _amountDeposited);
@@ -66,6 +70,8 @@
     //        __price =  x   */     
     // }
 
+    /// @dev function to create a portfolio; password only needed for the first instance after which its input becomes an empty string from frontend
+    /// @param _amount wei value of amount, typeOfInsurance name of the insurance, _beneficiary default beneficiary to automatically claim, _maxAmountForBenef specifies how much of the portfolio is for the beneficiary of which both can change
      function insure(uint _amount, string memory typeOfInsurance, address _beneficiary, uint _maxAmountForBenef, string memory _password) public payable noZeroAddress{
          require(insuranceDeposit(_amount), "Could not send the Insured amount");
 
@@ -85,34 +91,36 @@
         emit InsuranceMade(msg.sender, _amount, typeOfInsurance, count);
      }
 
+    /// @dev To hash String password and store it in bytes32
       function hashPassword (string memory a1) public pure returns (bytes32){
         return keccak256(abi.encode(a1));
     }
- 
+    /// @dev To check if the inputed password is correct  
      function stringsEqual (bytes32 _hashedPassword, string memory a2)public pure returns (bool){
         return _hashedPassword == keccak256(abi.encode(a2)) ? true : false;
     }
 
-    function makeClaim(uint id, address _beneficiary, uint _amount) public returns (bool){
+    function claim(uint id, uint _amount) public returns (bool){
        uint userPortId = portfolios[id].userInsuranceCount;
         Insurance storage _port = userInsurances[msg.sender][userPortId];
         require(_amount <= _port.amount, "Cannot claim above portfolio size");
 
-        require(_beneficiary == _port.beneficiary && _port.isApproved, "You have not been permitted to withdraw yet");
+        require(_port.isApproved, "You have not been permitted to withdraw yet");
+        require(msg.sender == _port.beneficiary, "You are not a beneficiary to this portfolio");
         require(_amount <= _port.amountForBeneficiary, "Amount is more than approved for beneficiary");
-             (bool success, ) = payable(_beneficiary).call{value: _amount}("");
+             (bool success, ) = payable(msg.sender).call{value: _amount}("");
              require(success, "Transfer to beneficiary failed!");
              _port.amount -= _amount;
              if(success){
-                emit ClaimMade(msg.sender, _beneficiary, _amount, id);
-                return (true);
+                emit ClaimMade(_port.owner, msg.sender, _amount, id);
+                return true;
         } else {
-            return (false);
+            return false;
         }
          
     }
 
-
+    /// @dev To deposit into the smart contract
     function insuranceDeposit(uint amount) payable noZeroAddress noReentrancy public returns (bool) {
         (bool success, ) = payable(mainAccount).call{value: amount}(""); 
         require(success, "Transfer Unsuccessful");
@@ -124,9 +132,10 @@
                 return false;
             }
     }
-
+    /// @dev Functional to facilitate a smart contract eth deposit
     receive() external payable {}
 
+    /// @dev To change the status of the beneficiary, that is pause or unpause withdrawal 
     function toggleAuthorisation(string memory _password, uint iD) payable public {
         require(msg.sender == userInsurances[msg.sender][iD].owner, "Not Owner of the Portfolio");
         bytes32 passCode = passwordHash[msg.sender];
