@@ -2,7 +2,7 @@
 
  pragma solidity = 0.8.9;
 
- import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+ import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
  contract InsureBlocks is Initializable {
     // State variables
