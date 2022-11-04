@@ -10,11 +10,13 @@
      bool locked;
      address owner;
 
+    // Modifier to prevent zero addresses
      modifier noZeroAddress(){
          require(msg.sender != address(0), "Addresss Zero cannot call this function");
          _;
      }
 
+    // Modifier to prevent re-entrancy attack
      modifier noReentrancy() {
          require(locked == false, "Can't call this function because it's locked");
          locked = true;
@@ -23,7 +25,7 @@
      }
 
      modifier onlyOwner() {
-         require(msg.sender == owner, "Only owner can call this functio;n");
+         require(msg.sender == owner, "Only owner can call this function");
          _;
      }
 
@@ -135,7 +137,7 @@
     /// @dev Functional to facilitate a smart contract eth deposit
     receive() external payable {}
 
-    /// @dev To change the status of the beneficiary, that is pause or unpause withdrawal 
+    /// @dev To change the withdrawal status of the beneficiary, that is pause or unpause withdrawal 
     function toggleAuthorisation(string memory _password, uint iD) payable public {
         require(msg.sender == userInsurances[msg.sender][iD].owner, "Not Owner of the Portfolio");
         bytes32 passCode = passwordHash[msg.sender];
@@ -147,7 +149,7 @@
             userInsurances[msg.sender][iD].isApproved = false;
         }
     } 
-
+    /// @dev Return the beneficiary address from the id of the portfolios
     function getBeneficiary(uint iD) public view returns(address){
         require(msg.sender == userInsurances[msg.sender][iD].owner, "Not Owner of the Portfolio");
         return userInsurances[msg.sender][iD].beneficiary;
@@ -196,6 +198,5 @@
         (bool success, ) = payable(payee).call{value: amount}("");
         require(success, "Transfer failed");
     }
-
 
  }
