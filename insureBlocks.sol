@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
- pragma solidity = 0.8.9;
+ pragma solidity = 0.6.7;
 
- import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+ import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
  contract InsureBlocks is Initializable {
     // State variables
